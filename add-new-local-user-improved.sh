@@ -5,7 +5,7 @@
 # will not attempt to create a user and returns an exit
 # status of 1
 if [[ "${EUID}" -ne 0 ]]; then
-  echo "This script must be run as root" 1>&2
+  echo 'This script must be run as root' >&2
   exit 1
 fi
 
@@ -13,7 +13,7 @@ fi
 # page if the user does not supply an account name on the command
 # line and returns and exit status of 1.
 if [[ "${#}" -lt 1 ]]; then
-  echo "Usage: ${0} USER_NAME [COMMENT]. . ."
+  echo "Usage: ${0} USER_NAME [COMMENT]. . ." >&2
   exit 1
 fi
 
@@ -26,12 +26,12 @@ PASS_WORD=$(source ./gen-passwd.sh)
 USER_NAME="${1}"
 shift
 COMMENT="${@}"
-$(useradd -c "${COMMENT}" -m ${USER_NAME})
+$(useradd -c "${COMMENT}" -m ${USER_NAME}) &> /dev/null
 
 # inform the user if the account was not able to be created for some reason
 # if the account is not created, the script is to return an exit status of 1.
 if [[ "${?}" -ne 0 ]]; then
-  echo "the account could not be created."
+  echo "the account could not be created." >&2
   exit 1
 fi
 
@@ -40,19 +40,18 @@ fi
 # to easily deliver the information to the new account holder.
 # assign password
 #PASSWORD_=$(source ./gen-passwd.sh)
-echo "${PASS_WORD}" |  passwd --stdin ${USER_NAME}
+echo "${PASS_WORD}" |  passwd --stdin ${USER_NAME} &> /dev/null
 
 # force password change on first login
-passwd -e ${USER_NAME}
+passwd -e ${USER_NAME} &> /dev/null
 
 if [[ "${?}" -eq 0 ]]; then
-  echo
   echo "username: ${USER_NAME}"
   echo "password: ${PASS_WORD}"
   echo "host: ${HOSTNAME}"
   exit 0
 else
-  echo "the password for user ${USER_NAME} was not created successfully."
+  echo "the password for user ${USER_NAME} was not created successfully." >&2
   exit 1
 fi
 
